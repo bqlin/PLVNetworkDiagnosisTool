@@ -1,14 +1,18 @@
 //
 //  AppDelegate.m
-//  PLVNetworkDiagnosisTool
+//  Demo
 //
 //  Created by Bq Lin on 2017/12/28.
 //  Copyright © 2017年 POLYV. All rights reserved.
 //
 
 #import "AppDelegate.h"
+#import "PLVNetworkDiagnosisTool.h"
 
 @interface AppDelegate ()
+
+@property (nonatomic, strong) PLVNetworkConnectionManager *connectionManager;
+@property (nonatomic, strong) PLVNetworkDiagnosisTool *diagnosisTool;
 
 @end
 
@@ -17,6 +21,43 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 	// Override point for customization after application launch.
+	NSString *deviceIp = [PLVDeviceNetworkUtil deviceIp];
+	NSLog(@"deviceIp: %@", deviceIp);
+	
+	NSString *gatewayIp = [PLVDeviceNetworkUtil gatewayIp];
+	NSLog(@"gatewayIp: %@", gatewayIp);
+	NSString *ipv4Gateway = [PLVDeviceNetworkUtil ipv4Gateway];
+	NSLog(@"ipv4Gateway: %@", ipv4Gateway);
+	NSString *ipv6Gateway = [PLVDeviceNetworkUtil ipv6Gateway];
+	NSLog(@"ipv6Gateway: %@", ipv6Gateway);
+	
+	NSString *domain = @"polyv.net";
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+		NSArray *DNSs = [PLVDeviceNetworkUtil DNSsWithDomain:domain];
+		NSLog(@"DNSs: %@", DNSs);
+		NSArray *ipv4DNSs = [PLVDeviceNetworkUtil ipv4DNSsWithDomain:domain];
+		NSLog(@"ipv4DNSs: %@", ipv4DNSs);
+		NSArray *ipv6DNSs = [PLVDeviceNetworkUtil ipv6DNSsWithDomain:domain];
+		NSLog(@"ipv6DNSs: %@", ipv6DNSs);
+	});
+	
+	NSArray *outputDNSServers = [PLVDeviceNetworkUtil outputDNSServers];
+	NSLog(@"outputDNSServers: %@", outputDNSServers);
+	
+	PLVNetworkType networkType = [PLVDeviceNetworkUtil networkTypeFromStatusBar];
+	networkType = 0;
+	
+	self.connectionManager = [PLVNetworkConnectionManager new];
+	[self.connectionManager connectWithHost:domain];
+	__weak typeof(self) weakSelf = self;
+	self.connectionManager.connectCompletion = ^(BOOL success) {
+		NSString *result = weakSelf.connectionManager.resultLog;
+		NSLog(@"result: %@", result);
+	};
+	
+	self.diagnosisTool = [PLVNetworkDiagnosisTool new];
+	[self.diagnosisTool startNetworkDiagnosis];
+	
 	return YES;
 }
 
