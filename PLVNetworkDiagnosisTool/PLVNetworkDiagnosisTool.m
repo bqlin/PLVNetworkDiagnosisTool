@@ -48,7 +48,7 @@ NSInteger PLVTimeIntervalSinceMicroseconds(NSInteger microseconds) {
 	BOOL _connectSuccess;  //记录连接是否成功
 }
 
-@property (nonatomic, strong) PLVNetworkConnectionManager *connectionManager;
+@property (nonatomic, strong) PLVTcpConnectionService *connectionManager;
 
 @property (nonatomic, assign) PLVNetworkType networkType;
 
@@ -183,7 +183,7 @@ NSInteger PLVTimeIntervalSinceMicroseconds(NSInteger microseconds) {
 //	_connectSuccess = NO;
 //	[self recordStepInfo:@"\n开始TCP连接测试..."];
 //	if ([_hostAddress count] > 0) {
-//		self.connectionManager = [[PLVNetworkConnectionManager alloc] init];
+//		self.connectionManager = [[PLVTcpConnectionService alloc] init];
 //		for (int i = 0; i < [_hostAddress count]; i++) {
 //			[_netConnect runWithHostAddress:[_hostAddress objectAtIndex:i] port:80];
 //		}

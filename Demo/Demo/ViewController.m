@@ -7,8 +7,14 @@
 //
 
 #import "ViewController.h"
+#import "PLVNetworkDiagnosisTool.h"
 
 @interface ViewController ()
+
+@property (weak, nonatomic) IBOutlet UITextView *textView;
+
+@property (nonatomic, strong) PLVTcpConnectionService *connectionManager;
+@property (nonatomic, copy) NSString *domain;
 
 @end
 
@@ -17,6 +23,8 @@
 - (void)viewDidLoad {
 	[super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
+	
+	self.domain = @"polyv.net";
 }
 
 
@@ -25,5 +33,28 @@
 	// Dispose of any resources that can be recreated.
 }
 
+- (IBAction)check:(UIBarButtonItem *)sender {
+	__weak typeof(self) weakSelf = self;
+	self.connectionManager = [PLVTcpConnectionService new];
+	self.connectionManager.connectCompletion = ^(BOOL success) {
+		NSString *result = weakSelf.connectionManager.resultLog;
+		dispatch_async(dispatch_get_main_queue(), ^{
+			weakSelf.textView.text = result;
+		});
+	};
+	[self.connectionManager connectWithHost:self.domain];
+}
+
+- (void)checkTCPConnect {
+	__weak typeof(self) weakSelf = self;
+	self.connectionManager = [PLVTcpConnectionService new];
+	self.connectionManager.connectCompletion = ^(BOOL success) {
+		NSString *result = weakSelf.connectionManager.resultLog;
+		dispatch_async(dispatch_get_main_queue(), ^{
+			weakSelf.textView.text = result;
+		});
+	};
+	[self.connectionManager connectWithHost:self.domain];
+}
 
 @end

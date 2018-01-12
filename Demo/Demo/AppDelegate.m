@@ -8,11 +8,13 @@
 
 #import "AppDelegate.h"
 #import "PLVNetworkDiagnosisTool.h"
+//#import "LDNetConnect.h"
 
 @interface AppDelegate ()
 
-@property (nonatomic, strong) PLVNetworkConnectionManager *connectionManager;
+@property (nonatomic, strong) PLVTcpConnectionService *connectionManager;
 @property (nonatomic, strong) PLVNetworkDiagnosisTool *diagnosisTool;
+//@property (nonatomic, strong) LDNetConnect *connect;
 
 @end
 
@@ -21,44 +23,57 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 	// Override point for customization after application launch.
-	NSString *deviceIp = [PLVDeviceNetworkUtil deviceIp];
-	NSLog(@"deviceIp: %@", deviceIp);
+//	NSString *deviceIp = [PLVDeviceNetworkUtil deviceIp];
+//	NSLog(@"deviceIp: %@", deviceIp);
 	
-	NSString *gatewayIp = [PLVDeviceNetworkUtil gatewayIp];
-	NSLog(@"gatewayIp: %@", gatewayIp);
-	NSString *ipv4Gateway = [PLVDeviceNetworkUtil ipv4Gateway];
-	NSLog(@"ipv4Gateway: %@", ipv4Gateway);
-	NSString *ipv6Gateway = [PLVDeviceNetworkUtil ipv6Gateway];
-	NSLog(@"ipv6Gateway: %@", ipv6Gateway);
+//	NSString *gatewayIp = [PLVDeviceNetworkUtil gatewayIp];
+//	NSLog(@"gatewayIp: %@", gatewayIp);
+//	NSString *ipv4Gateway = [PLVDeviceNetworkUtil ipv4Gateway];
+//	NSLog(@"ipv4Gateway: %@", ipv4Gateway);
+//	NSString *ipv6Gateway = [PLVDeviceNetworkUtil ipv6Gateway];
+//	NSLog(@"ipv6Gateway: %@", ipv6Gateway);
+//
+//	NSString *domain = @"polyv.net";
+//	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+//		NSArray *DNSs = [PLVDeviceNetworkUtil DNSsWithDomain:domain];
+//		NSLog(@"DNSs: %@", DNSs);
+//		NSArray *ipv4DNSs = [PLVDeviceNetworkUtil ipv4DNSsWithDomain:domain];
+//		NSLog(@"ipv4DNSs: %@", ipv4DNSs);
+//		NSArray *ipv6DNSs = [PLVDeviceNetworkUtil ipv6DNSsWithDomain:domain];
+//		NSLog(@"ipv6DNSs: %@", ipv6DNSs);
+//	});
+//
+//	NSArray *outputDNSServers = [PLVDeviceNetworkUtil outputDNSServers];
+//	NSLog(@"outputDNSServers: %@", outputDNSServers);
+//
+//	PLVNetworkType networkType = [PLVDeviceNetworkUtil networkTypeFromStatusBar];
+//	networkType = 0;
 	
-	NSString *domain = @"polyv.net";
-	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-		NSArray *DNSs = [PLVDeviceNetworkUtil DNSsWithDomain:domain];
-		NSLog(@"DNSs: %@", DNSs);
-		NSArray *ipv4DNSs = [PLVDeviceNetworkUtil ipv4DNSsWithDomain:domain];
-		NSLog(@"ipv4DNSs: %@", ipv4DNSs);
-		NSArray *ipv6DNSs = [PLVDeviceNetworkUtil ipv6DNSsWithDomain:domain];
-		NSLog(@"ipv6DNSs: %@", ipv6DNSs);
-	});
+//	__weak typeof(self) weakSelf = self;
+//	self.connectionManager = [PLVTcpConnectionService new];
+//	self.connectionManager.connectCompletion = ^(BOOL success) {
+//		NSString *result = weakSelf.connectionManager.resultLog;
+//		NSLog(@"result: %@", result);
+//	};
+//	[self.connectionManager connectWithHost:domain];
 	
-	NSArray *outputDNSServers = [PLVDeviceNetworkUtil outputDNSServers];
-	NSLog(@"outputDNSServers: %@", outputDNSServers);
 	
-	PLVNetworkType networkType = [PLVDeviceNetworkUtil networkTypeFromStatusBar];
-	networkType = 0;
 	
-	self.connectionManager = [PLVNetworkConnectionManager new];
-	[self.connectionManager connectWithHost:domain];
-	__weak typeof(self) weakSelf = self;
-	self.connectionManager.connectCompletion = ^(BOOL success) {
-		NSString *result = weakSelf.connectionManager.resultLog;
-		NSLog(@"result: %@", result);
-	};
+//	self.diagnosisTool = [PLVNetworkDiagnosisTool new];
+//	[self.diagnosisTool startNetworkDiagnosis];
 	
-	self.diagnosisTool = [PLVNetworkDiagnosisTool new];
-	[self.diagnosisTool startNetworkDiagnosis];
+//	self.connect = [[LDNetConnect alloc] init];
+//	self.connect.delegate = self;
+//	[self.connect runWithHostAddress:domain port:80];
 	
 	return YES;
+}
+
+- (void)appendSocketLog:(NSString *)socketLog {
+	NSLog(@"socket: %@", socketLog);
+}
+- (void)connectDidEnd:(BOOL)success {
+	NSLog(@"%s - %@ %s", __FUNCTION__, [NSThread currentThread], success?"YES":"NO");
 }
 
 

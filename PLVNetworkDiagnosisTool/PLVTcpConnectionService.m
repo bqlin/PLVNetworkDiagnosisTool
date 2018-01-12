@@ -1,15 +1,19 @@
 //
-//  PLVNetworkConnectionManager.m
+//  PLVTcpConnectionService.m
 //  Demo
 //
 //  Created by Bq Lin on 2017/12/29.
 //  Copyright © 2017年 POLYV. All rights reserved.
 //
 
-#import "PLVNetworkConnectionManager.h"
+#import "PLVTcpConnectionService.h"
 #import "PLVNetworkDiagnosisTool.h"
+#import <sys/socket.h>
+#import <netinet/in.h>
+#import <arpa/inet.h>
+#import <unistd.h>
 
-@interface PLVNetworkConnectionManager ()
+@interface PLVTcpConnectionService ()
 
 @property (nonatomic, assign) NSInteger startTime;
 
@@ -31,7 +35,7 @@
 
 @end
 
-@implementation PLVNetworkConnectionManager
+@implementation PLVTcpConnectionService
 
 - (instancetype)init {
 	if (self = [super init]) {
@@ -45,11 +49,16 @@
 	[self connectWithHost:host port:80];
 }
 - (void)connectWithHost:(NSString *)host port:(NSInteger)port {
+	// 维护变量
 	self.host = host;
 	self.port = port;
 	BOOL isIpv6 = [host rangeOfString:@":"].location != NSNotFound;
 	self.isIpv6 = isIpv6;
 	self.startTime = PLVCurrentMicroseconds();
+	self.isExistSuccess = NO;
+	self.connectCount = 0;
+	self.sumTime = 0;
+	self.resultLog = @"";
 	
 	// 开始连接
 	[self connect];
@@ -95,36 +104,40 @@
 	self.socket = CFSocketCreate(kCFAllocatorDefault, addressFamily, SOCK_STREAM, IPPROTO_TCP,
 							 kCFSocketConnectCallBack, TCPServerConnectCallBack, &CTX);
 	
-	//执行连接
+	// 执行连接
 	CFSocketConnectToAddress(self.socket, (__bridge CFDataRef)addr, 3);
-	CFRunLoopRef cfrl = CFRunLoopGetCurrent();  // 获取当前运行循环
-	CFRunLoopSourceRef source = CFSocketCreateRunLoopSource(kCFAllocatorDefault, self.socket, self.connectCount);  //定义循环对象
-	CFRunLoopAddSource(cfrl, source, kCFRunLoopDefaultMode);  //将循环对象加入当前循环中
+	// 获取当前运行循环
+	CFRunLoopRef currentRunLoop = CFRunLoopGetCurrent();
+	// 定义循环对象
+	CFRunLoopSourceRef source = CFSocketCreateRunLoopSource(kCFAllocatorDefault, self.socket, self.connectCount);
+	// 将循环对象加入当前循环中
+	CFRunLoopAddSource(currentRunLoop, source, kCFRunLoopDefaultMode);
 	CFRelease(source);
 }
 
 
 /// 连接回调函数
-static void TCPServerConnectCallBack(CFSocketRef socket, CFSocketCallBackType type,
-									 CFDataRef address, const void *data, void *info) {
+static void TCPServerConnectCallBack(CFSocketRef socket, CFSocketCallBackType type, CFDataRef address, const void *data, void *info) {
+	NSString *add = [[NSString alloc] initWithData:(__bridge NSData *)address encoding:NSUTF8StringEncoding];
+	NSLog(@"add: %@", add);
 	if (data != NULL) {
 		printf("connect");
-		PLVNetworkConnectionManager *manager = (__bridge_transfer PLVNetworkConnectionManager *)info;
-		[manager readStream:FALSE];
+		PLVTcpConnectionService *manager = (__bridge_transfer PLVTcpConnectionService *)info;
+		[manager readStream:NO];
 	} else {
-		PLVNetworkConnectionManager *manager = (__bridge_transfer PLVNetworkConnectionManager *)info;
-		[manager readStream:TRUE];
+		PLVTcpConnectionService *manager = (__bridge_transfer PLVTcpConnectionService *)info;
+		[manager readStream:YES];
 	}
 }
 
 - (void)readStream:(BOOL)success {
-	//    NSString *errorLog = @"";
 	if (success) {
 		self.isExistSuccess = YES;
-		NSInteger interval = PLVTimeIntervalSinceMicroseconds(self.startTime) / 1000;
+		NSInteger interval = PLVTimeIntervalSinceMicroseconds(self.startTime);
 		self.sumTime += interval;
-		NSLog(@"connect success %ld", (long)interval);
-		self.resultLog = [self.resultLog stringByAppendingString:[NSString stringWithFormat:@"%d's time=%ldms, ", self.connectCount + 1, (long)interval]];
+		NSLog(@"connect success %ld", interval);
+		NSTimeInterval msInterval = interval / 1000.0;
+		self.resultLog = [self.resultLog stringByAppendingString:[NSString stringWithFormat:@"%d's time=%.3fms, ", self.connectCount + 1, msInterval]];
 	} else {
 		self.sumTime = 99999;
 		self.resultLog = [self.resultLog stringByAppendingString:[NSString stringWithFormat:@"%d's time=TimeOut, ", self.connectCount + 1]];
@@ -133,11 +146,9 @@ static void TCPServerConnectCallBack(CFSocketRef socket, CFSocketCallBackType ty
 		if (self.sumTime >= 99999) {
 			self.resultLog = [self.resultLog substringToIndex:[self.resultLog length] - 1];
 		} else {
-			self.resultLog = [self.resultLog stringByAppendingString:[NSString stringWithFormat:@"average=%ldms", (long)(self.sumTime / 4)]];
+			NSTimeInterval averageInterval = self.sumTime / self.maxConnectCount / 1000.0;
+			self.resultLog = [self.resultLog stringByAppendingString:[NSString stringWithFormat:@"average=%.3fms", averageInterval]];
 		}
-//		if (self.delegate && [self.delegate respondsToSelector:@selector(appendSocketLog:)]) {
-//			[self.delegate appendSocketLog:self.resultLog];
-//		}
 	}
 	
 	CFRelease(self.socket);

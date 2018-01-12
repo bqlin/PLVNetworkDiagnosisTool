@@ -1,5 +1,5 @@
 //
-//  PLVNetworkConnectionManager.h
+//  PLVTcpConnectionService.h
 //  Demo
 //
 //  Created by Bq Lin on 2017/12/29.
@@ -7,12 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <sys/socket.h>
-#import <netinet/in.h>
-#import <arpa/inet.h>
-#import <unistd.h>
 
-@interface PLVNetworkConnectionManager : NSObject
+@interface PLVTcpConnectionService : NSObject
 
 @property (nonatomic, assign) int maxConnectCount;
 

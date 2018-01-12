@@ -17,7 +17,7 @@
 		03CB2CA51FF4FE6C003B6E48 /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 03CB2CA41FF4FE6C003B6E48 /* libresolv.tbd */; };
 		03CB2CA91FF4FECC003B6E48 /* PLVNetworkDiagnosisTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 03CB2CA71FF4FECC003B6E48 /* PLVNetworkDiagnosisTool.m */; };
 		03D397B71FF5DCBB00907B36 /* PLVDeviceNetworkUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 03D397B61FF5DCBB00907B36 /* PLVDeviceNetworkUtil.m */; };
-		03D397BB1FF61D9200907B36 /* PLVNetworkConnectionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 03D397BA1FF61D9200907B36 /* PLVNetworkConnectionManager.m */; };
+		03D397BB1FF61D9200907B36 /* PLVTcpConnectionService.m in Sources */ = {isa = PBXBuildFile; fileRef = 03D397BA1FF61D9200907B36 /* PLVTcpConnectionService.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,8 +38,8 @@
 		03D397B51FF5DCBB00907B36 /* PLVDeviceNetworkUtil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PLVDeviceNetworkUtil.h; sourceTree = "<group>"; };
 		03D397B61FF5DCBB00907B36 /* PLVDeviceNetworkUtil.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PLVDeviceNetworkUtil.m; sourceTree = "<group>"; };
 		03D397B81FF5DDCE00907B36 /* Route.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Route.h; sourceTree = "<group>"; };
-		03D397B91FF61D9200907B36 /* PLVNetworkConnectionManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PLVNetworkConnectionManager.h; sourceTree = "<group>"; };
-		03D397BA1FF61D9200907B36 /* PLVNetworkConnectionManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PLVNetworkConnectionManager.m; sourceTree = "<group>"; };
+		03D397B91FF61D9200907B36 /* PLVTcpConnectionService.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PLVTcpConnectionService.h; sourceTree = "<group>"; };
+		03D397BA1FF61D9200907B36 /* PLVTcpConnectionService.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PLVTcpConnectionService.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,9 +55,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		03C7177420074A1600F7A5DB /* LD */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = LD;
+			sourceTree = "<group>";
+		};
 		03CB2C7B1FF4FD42003B6E48 = {
 			isa = PBXGroup;
 			children = (
+				03C7177420074A1600F7A5DB /* LD */,
 				03CB2CA61FF4FECC003B6E48 /* PLVNetworkDiagnosisTool */,
 				03CB2C861FF4FD42003B6E48 /* Demo */,
 				03CB2C851FF4FD42003B6E48 /* Products */,
@@ -101,8 +109,8 @@
 		03CB2CA61FF4FECC003B6E48 /* PLVNetworkDiagnosisTool */ = {
 			isa = PBXGroup;
 			children = (
-				03D397B91FF61D9200907B36 /* PLVNetworkConnectionManager.h */,
-				03D397BA1FF61D9200907B36 /* PLVNetworkConnectionManager.m */,
+				03D397B91FF61D9200907B36 /* PLVTcpConnectionService.h */,
+				03D397BA1FF61D9200907B36 /* PLVTcpConnectionService.m */,
 				03D397B51FF5DCBB00907B36 /* PLVDeviceNetworkUtil.h */,
 				03D397B61FF5DCBB00907B36 /* PLVDeviceNetworkUtil.m */,
 				03CB2CA81FF4FECC003B6E48 /* PLVNetworkDiagnosisTool.h */,
@@ -188,7 +196,7 @@
 				03CB2C8C1FF4FD42003B6E48 /* ViewController.m in Sources */,
 				03CB2C971FF4FD42003B6E48 /* main.m in Sources */,
 				03CB2C891FF4FD42003B6E48 /* AppDelegate.m in Sources */,
-				03D397BB1FF61D9200907B36 /* PLVNetworkConnectionManager.m in Sources */,
+				03D397BB1FF61D9200907B36 /* PLVTcpConnectionService.m in Sources */,
 				03D397B71FF5DCBB00907B36 /* PLVDeviceNetworkUtil.m in Sources */,
 				03CB2CA91FF4FECC003B6E48 /* PLVNetworkDiagnosisTool.m in Sources */,
 			);
