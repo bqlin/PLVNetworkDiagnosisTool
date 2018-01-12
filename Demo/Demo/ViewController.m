@@ -14,6 +14,7 @@
 @property (weak, nonatomic) IBOutlet UITextView *textView;
 
 @property (nonatomic, strong) PLVTcpConnectionService *connectionManager;
+@property (nonatomic, strong) PLVPingService *pingService;
 @property (nonatomic, copy) NSString *domain;
 
 @end
@@ -24,7 +25,9 @@
 	[super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
 	
+	self.domain = @"www.baidu.com";
 	self.domain = @"polyv.net";
+	self.pingService = [[PLVPingService alloc] init];
 }
 
 
@@ -34,21 +37,19 @@
 }
 
 - (IBAction)check:(UIBarButtonItem *)sender {
+	[self.pingService pingWithHost:self.domain];
 	__weak typeof(self) weakSelf = self;
-	self.connectionManager = [PLVTcpConnectionService new];
-	self.connectionManager.connectCompletion = ^(BOOL success) {
-		NSString *result = weakSelf.connectionManager.resultLog;
+	self.pingService.pingCompletion = ^(PLVPingService *pingService, NSString *result) {
 		dispatch_async(dispatch_get_main_queue(), ^{
 			weakSelf.textView.text = result;
 		});
 	};
-	[self.connectionManager connectWithHost:self.domain];
 }
 
 - (void)checkTCPConnect {
 	__weak typeof(self) weakSelf = self;
 	self.connectionManager = [PLVTcpConnectionService new];
-	self.connectionManager.connectCompletion = ^(BOOL success) {
+	self.connectionManager.connectCompletion = ^(PLVTcpConnectionService *tcpConnect, BOOL success) {
 		NSString *result = weakSelf.connectionManager.resultLog;
 		dispatch_async(dispatch_get_main_queue(), ^{
 			weakSelf.textView.text = result;

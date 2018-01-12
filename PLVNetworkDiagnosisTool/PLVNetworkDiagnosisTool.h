@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "PLVDeviceNetworkUtil.h"
 #import "PLVTcpConnectionService.h"
+#import "PLVPingService.h"
 
 /// 获取当前时间
 NSInteger PLVCurrentMicroseconds(void);

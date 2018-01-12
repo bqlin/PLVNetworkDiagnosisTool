@@ -157,7 +157,7 @@ static void TCPServerConnectCallBack(CFSocketRef socket, CFSocketCallBackType ty
 		self.startTime = PLVCurrentMicroseconds();
 		[self connect];
 	} else {
-		if (self.connectCompletion) self.connectCompletion(self.isExistSuccess);
+		if (self.connectCompletion) self.connectCompletion(self, self.isExistSuccess);
 	}
 }
 
