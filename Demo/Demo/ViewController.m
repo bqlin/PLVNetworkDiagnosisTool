@@ -15,6 +15,7 @@
 
 @property (nonatomic, strong) PLVTcpConnectionService *connectionManager;
 @property (nonatomic, strong) PLVPingService *pingService;
+@property (nonatomic, strong) PLVTraceRouteService *traceRouteService;
 @property (nonatomic, copy) NSString *domain;
 
 @end
@@ -28,6 +29,7 @@
 	self.domain = @"www.baidu.com";
 	self.domain = @"polyv.net";
 	self.pingService = [[PLVPingService alloc] init];
+	self.traceRouteService = [[PLVTraceRouteService alloc] init];
 }
 
 
@@ -37,6 +39,22 @@
 }
 
 - (IBAction)check:(UIBarButtonItem *)sender {
+	[self checkTraceRoute];
+}
+
+- (void)checkTraceRoute {
+	__weak typeof(self) weakSelf = self;
+	self.traceRouteService.traceRouteCompletion = ^(PLVTraceRouteService *tranceRouteService, BOOL success) {
+		NSArray *result = tranceRouteService.results;
+		dispatch_async(dispatch_get_main_queue(), ^{
+			weakSelf.textView.text = result.description;
+		});
+		NSLog(@"result: %@", tranceRouteService.results);
+	};
+	[self.traceRouteService performSelectorInBackground:@selector(traceRoute:) withObject:self.domain];
+}
+
+- (void)checkPing {
 	[self.pingService pingWithHost:self.domain];
 	__weak typeof(self) weakSelf = self;
 	self.pingService.pingCompletion = ^(PLVPingService *pingService, NSString *result) {
@@ -50,7 +68,7 @@
 	__weak typeof(self) weakSelf = self;
 	self.connectionManager = [PLVTcpConnectionService new];
 	self.connectionManager.connectCompletion = ^(PLVTcpConnectionService *tcpConnect, BOOL success) {
-		NSString *result = weakSelf.connectionManager.resultLog;
+		NSString *result = weakSelf.connectionManager.result;
 		dispatch_async(dispatch_get_main_queue(), ^{
 			weakSelf.textView.text = result;
 		});

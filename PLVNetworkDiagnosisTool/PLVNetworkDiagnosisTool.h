@@ -10,11 +10,7 @@
 #import "PLVDeviceNetworkUtil.h"
 #import "PLVTcpConnectionService.h"
 #import "PLVPingService.h"
-
-/// 获取当前时间
-NSInteger PLVCurrentMicroseconds(void);
-/// 计算时间间隔
-NSInteger PLVTimeIntervalSinceMicroseconds(NSInteger microseconds);
+#import "PLVTraceRouteService.h"
 
 @interface PLVNetworkDiagnosisTool : NSObject
 

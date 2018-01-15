@@ -17,6 +17,11 @@ typedef NS_ENUM(NSInteger, PLVNetworkType) {
 	PLVNetworkTypeWiFi
 };
 
+/// 获取当前时间
+NSInteger PLVCurrentMicroseconds(void);
+/// 计算时间间隔
+NSInteger PLVTimeIntervalSinceMicroseconds(NSInteger microseconds);
+
 // 优先返回 ipv6 地址
 @interface PLVDeviceNetworkUtil : NSObject
 

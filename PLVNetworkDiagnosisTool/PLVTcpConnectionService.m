@@ -23,7 +23,7 @@
 
 @property (nonatomic, assign) CFSocketRef socket;
 
-@property (nonatomic, copy) NSString *resultLog;
+@property (nonatomic, copy) NSString *result;
 
 //监测是否有connect成功
 @property (nonatomic, assign) BOOL isExistSuccess;
@@ -39,7 +39,7 @@
 
 - (instancetype)init {
 	if (self = [super init]) {
-		_resultLog = @"";
+		_result = @"";
 		_maxConnectCount = 3;
 	}
 	return self;
@@ -58,7 +58,7 @@
 	self.isExistSuccess = NO;
 	self.connectCount = 0;
 	self.sumTime = 0;
-	self.resultLog = @"";
+	self.result = @"";
 	
 	// 开始连接
 	[self connect];
@@ -137,17 +137,17 @@ static void TCPServerConnectCallBack(CFSocketRef socket, CFSocketCallBackType ty
 		self.sumTime += interval;
 		NSLog(@"connect success %ld", interval);
 		NSTimeInterval msInterval = interval / 1000.0;
-		self.resultLog = [self.resultLog stringByAppendingString:[NSString stringWithFormat:@"%d's time=%.3fms, ", self.connectCount + 1, msInterval]];
+		self.result = [self.result stringByAppendingString:[NSString stringWithFormat:@"%d's time=%.3fms, ", self.connectCount + 1, msInterval]];
 	} else {
 		self.sumTime = 99999;
-		self.resultLog = [self.resultLog stringByAppendingString:[NSString stringWithFormat:@"%d's time=TimeOut, ", self.connectCount + 1]];
+		self.result = [self.result stringByAppendingString:[NSString stringWithFormat:@"%d's time=TimeOut, ", self.connectCount + 1]];
 	}
 	if (self.connectCount == self.maxConnectCount - 1) {
 		if (self.sumTime >= 99999) {
-			self.resultLog = [self.resultLog substringToIndex:[self.resultLog length] - 1];
+			self.result = [self.result substringToIndex:[self.result length] - 1];
 		} else {
 			NSTimeInterval averageInterval = self.sumTime / self.maxConnectCount / 1000.0;
-			self.resultLog = [self.resultLog stringByAppendingString:[NSString stringWithFormat:@"average=%.3fms", averageInterval]];
+			self.result = [self.result stringByAppendingString:[NSString stringWithFormat:@"average=%.3fms", averageInterval]];
 		}
 	}
 	

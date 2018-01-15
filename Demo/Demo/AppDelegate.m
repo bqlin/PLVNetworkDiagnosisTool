@@ -52,7 +52,7 @@
 //	__weak typeof(self) weakSelf = self;
 //	self.connectionManager = [PLVTcpConnectionService new];
 //	self.connectionManager.connectCompletion = ^(BOOL success) {
-//		NSString *result = weakSelf.connectionManager.resultLog;
+//		NSString *result = weakSelf.connectionManager.result;
 //		NSLog(@"result: %@", result);
 //	};
 //	[self.connectionManager connectWithHost:domain];

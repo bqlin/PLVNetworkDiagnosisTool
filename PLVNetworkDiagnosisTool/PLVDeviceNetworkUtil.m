@@ -18,10 +18,25 @@
 
 #import <sys/sysctl.h>
 #import <netinet/in.h>
+#import <sys/time.h>
 
-#include "Route.h"
+#import "Route.h"
 
 #define ROUNDUP(a) ((a) > 0 ? (1 + (((a)-1) | (sizeof(long) - 1))) : sizeof(long))
+
+
+/// 获取当前时间
+NSInteger PLVCurrentMicroseconds() {
+	struct timeval time;
+	gettimeofday(&time, NULL);
+	return time.tv_usec;
+}
+
+/// 计算时间间隔
+NSInteger PLVTimeIntervalSinceMicroseconds(NSInteger microseconds) {
+	NSInteger now = PLVCurrentMicroseconds();
+	return now - microseconds;
+}
 
 @implementation PLVDeviceNetworkUtil
 

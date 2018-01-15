@@ -12,7 +12,7 @@
 
 @property (nonatomic, assign) int maxConnectCount;
 
-@property (nonatomic, copy, readonly) NSString *resultLog;
+@property (nonatomic, copy, readonly) NSString *result;
 
 @property (nonatomic, copy) void (^connectCompletion)(PLVTcpConnectionService *tcpConnect, BOOL success);
 

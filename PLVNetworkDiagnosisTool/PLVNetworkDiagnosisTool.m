@@ -10,20 +10,6 @@
 #import <CoreTelephony/CTCarrier.h>
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import <UIKit/UIKit.h>
-#import <sys/time.h>
-
-/// 获取当前时间
-NSInteger PLVCurrentMicroseconds() {
-	struct timeval time;
-	gettimeofday(&time, NULL);
-	return time.tv_usec;
-}
-
-/// 计算时间间隔
-NSInteger PLVTimeIntervalSinceMicroseconds(NSInteger microseconds) {
-	NSInteger now = PLVCurrentMicroseconds();
-	return now - microseconds;
-}
 
 @interface PLVNetworkDiagnosisTool ()
 {
@@ -200,7 +186,7 @@ NSInteger PLVTimeIntervalSinceMicroseconds(NSInteger microseconds) {
 //		[self recordStepInfo:@"\n开始traceroute..."];
 //		_traceRouter = [[LDNetTraceRoute alloc] initWithMaxTTL:TRACEROUTE_MAX_TTL
 //													   timeout:TRACEROUTE_TIMEOUT
-//												   maxAttempts:TRACEROUTE_ATTEMPTS
+//												   self.maxAttempts:TRACEROUTE_ATTEMPTS
 //														  port:TRACEROUTE_PORT];
 //		_traceRouter.delegate = self;
 //		if (_traceRouter) {
