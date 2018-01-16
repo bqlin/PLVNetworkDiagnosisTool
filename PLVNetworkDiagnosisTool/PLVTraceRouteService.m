@@ -133,7 +133,6 @@ static const int TRACEROUTE_TIMEOUT = 5000000;
 		//每一步连续发送maxAttenpts报文
 		icmp = false;
 		NSMutableString *traceTTLLog = [NSMutableString string];
-		//[traceTTLLog appendFormat:@"%ld\t", ttl];
 		NSString *hostAddress = @"***";
 		for (int try = 0; try < self.maxAttempts; try ++) {
 			startTime = PLVCurrentMicroseconds();
@@ -214,7 +213,6 @@ static const int TRACEROUTE_TIMEOUT = 5000000;
 			} else {
 				// 拼接字符串
 				[self.results addObject:[NSString stringWithFormat:@"********"]];
-				//[self.delegate appendRouteLog:[NSString stringWithFormat:@"%d\t********\t", ttl]];
 			}
 		}
 		
@@ -228,7 +226,6 @@ static const int TRACEROUTE_TIMEOUT = 5000000;
 	// On averti le delegate que le traceroute est terminé.
 	// 结束
 	if (self.traceRouteCompletion) self.traceRouteCompletion(self, error);
-	//[_delegate traceRouteDidEnd];
 }
 
 /// 停止traceroute
