@@ -15,16 +15,11 @@ typedef void(^PLVDomainInfoBlock)(PLVNetworkDiagnosisTool *diagnosisTool, NSDict
 
 /// tcp 连接测试
 @property (nonatomic, strong) PLVTcpConnectionService *connectionService;
-//@property (nonatomic, assign) BOOL tcpChecked;
 
 /// ping 测试
 @property (nonatomic, strong) PLVPingService *pingService;
-//@property (nonatomic, assign) BOOL pingChecked;
-
-//@property (nonatomic, assign) BOOL dnsChecked;
 
 @property (nonatomic, strong) NSDictionary *domainInfo;
-//@property (nonatomic, copy) PLVDomainInfoBlock domainInfoHandler;
 
 @end
 
@@ -71,6 +66,7 @@ static id _sharedTool = nil;
 	// 应用信息
 	NSDictionary *bundleInfo = [NSBundle mainBundle].infoDictionary;
 	NSString *appName = bundleInfo[@"CFBundleDisplayName"];
+	if (!appName.length) appName = bundleInfo[@"CFBundleName"];
 	NSString *appVersion = bundleInfo[@"CFBundleShortVersionString"];
 	appName = [NSString stringWithFormat:@"%@ %@", appName, appVersion];
 	
