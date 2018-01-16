@@ -20,7 +20,6 @@
 
 @property (nonatomic, copy) NSString *hostName;
 @property (nonatomic, copy) NSString *hostIp;
-@property (nonatomic, strong) NSTimer *sendTimer;
 @property (nonatomic, assign) NSInteger startTime;
 @property (nonatomic, assign) NSInteger pingCount;
 @property (nonatomic, copy) NSMutableString *result;
@@ -84,30 +83,21 @@
 	
 	pinger.delegate = self;
 	[pinger start];
-	
-	// 在当前线程一直执行
-//	do {
-//		[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
-//		NSLog(@"count: %zd", self.count);
-//	} while (self.pinger != nil || self.pingCount <= self.maxPingCount);
-	//NSLog(@"ssssss");
 }
 
 /// 发送ping指令
 - (void)sendPing {
-	self.pingCount ++;
 	//NSLog(@"ping count: %zd", self.pingCount);
-	if (self.pingCount > self.maxPingCount) {
+	if (self.pingCount >= self.maxPingCount) {
 		[self stop];
 		return;
 	}
 	self.startTime = PLVCurrentMicroseconds();
 	[self.pinger sendPingWithData:nil];
-	[self performSelector:@selector(timeout) withObject:nil afterDelay:1.0];
+	[self performSelector:@selector(timeout) withObject:nil afterDelay:3.0];
 }
 
 - (void)stop {
-	//NSLog(@"%s - %@", __FUNCTION__, [NSThread currentThread]);
 	self.averageInterval = [[self.intervals valueForKeyPath:@"@avg.doubleValue"] doubleValue];
 	[self.result appendFormat:@"average interval=%.3f ms", self.averageInterval];
 	
@@ -120,9 +110,6 @@
 	[self.pinger stop];
 	self.pinger = nil;
 	
-	[self.sendTimer invalidate];
-	self.sendTimer = nil;
-	
 	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(timeout) object:nil];
 	
 	self.hostName = nil;
@@ -134,7 +121,6 @@
 }
 
 - (void)timeout {
-	//NSLog(@"%s - %@", __FUNCTION__, [NSThread currentThread]);
 	[self.result appendFormat:@"ping timeout"];
 	[self clean];
 }
@@ -147,44 +133,39 @@
 #pragma mark - PLVSimplePingDelegate
 
 - (void)simplePing:(PLVSimplePing *)pinger didStartWithAddress:(NSData *)address {
-	//NSLog(@"%s - %@", __FUNCTION__, [NSThread currentThread]);
 	self.hostIp = [self.class displayAddressForAddress:address];
-	NSLog(@"start ping %@ (%@)", self.hostName, self.hostIp);
+	//NSLog(@"start ping %@ (%@)", self.hostName, self.hostIp);
 	[self.result appendFormat:@"ping %@ (%@): ", self.hostName, self.hostIp];
-	[self sendTimer];
-	assert(self.sendTimer == nil);
-	self.sendTimer = [NSTimer scheduledTimerWithTimeInterval:0.4 target:self selector:@selector(sendPing) userInfo:nil repeats:YES];
+	[self sendPing];
 }
 
 - (void)simplePing:(PLVSimplePing *)pinger didFailWithError:(NSError *)error {
-	//NSLog(@"%s - %@", __FUNCTION__, [NSThread currentThread]);
 	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(timeout) object:nil];
-	NSLog(@"%@, ping error: %@", self.hostIp, error);
+	//NSLog(@"%@, ping error: %@", self.hostIp, error);
 	[self.result appendFormat:@"ping error: %@, ", error.localizedDescription];
 	[self fail];
 }
 
 - (void)simplePing:(PLVSimplePing *)pinger didSendPacket:(NSData *)packet sequenceNumber:(uint16_t)sequenceNumber {
-	//NSLog(@"%s - %@", __FUNCTION__, [NSThread currentThread]);
 	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(timeout) object:nil];
 	//NSLog(@"%@, #%hu send packet success", self.hostIp sequenceNumber);
 }
 
 - (void)simplePing:(PLVSimplePing *)pinger didFailToSendPacket:(NSData *)packet sequenceNumber:(uint16_t)sequenceNumber error:(NSError *)error {
-	//NSLog(@"%s - %@", __FUNCTION__, [NSThread currentThread]);
 	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(timeout) object:nil];
-	NSLog(@"%@, #%hu send failed: %@", self.hostIp, sequenceNumber, [self.class shortErrorFromError:error]);
-	[self.result appendFormat:@"%ld's send failed: %@, ", self.pingCount, [self.class shortErrorFromError:error]];
+	//NSLog(@"%@, #%hu send failed: %@", self.hostIp, sequenceNumber, [self.class shortErrorFromError:error]);
+	[self.result appendFormat:@"%d's send failed: %@, ", sequenceNumber+1, [self.class shortErrorFromError:error]];
 	[self clean];
 }
 
 - (void)simplePing:(PLVSimplePing *)pinger didReceivePingResponsePacket:(NSData *)packet sequenceNumber:(uint16_t)sequenceNumber {
-	//NSLog(@"%s - %@", __FUNCTION__, [NSThread currentThread]);
 	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(timeout) object:nil];
 	NSTimeInterval interval = PLVTimeIntervalSinceMicroseconds(self.startTime) / 1000.0;
 	[self.intervals addObject:@(interval)];
-	NSLog(@"%lu bytes from %@: icmp_seq=%hu time=%.3f ms", packet.length, self.hostIp, sequenceNumber, interval);
-	[self.result appendFormat:@"%ld's interval=%.3f ms, ", self.pingCount, interval];
+	//NSLog(@"%lu bytes from %@: icmp_seq=%hu time=%.3f ms", packet.length, self.hostIp, sequenceNumber, interval);
+	[self.result appendFormat:@"%d's interval=%.3f ms, ", sequenceNumber+1, interval];
+	self.pingCount ++;
+	[self sendPing];
 }
 
 - (void)simplePing:(PLVSimplePing *)pinger didReceiveUnexpectedPacket:(NSData *)packet {
@@ -192,6 +173,7 @@
 	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(timeout) object:nil];
 	[self.result appendString:@"receive unexpected packet"];
 	[self clean];
+	self.pingCount ++;
 }
 
 #pragma mark - Utils

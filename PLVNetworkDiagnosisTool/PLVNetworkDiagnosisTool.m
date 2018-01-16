@@ -95,14 +95,12 @@ static id _sharedTool = nil;
 
 /// 获取设备网络信息
 + (NSDictionary *)deviceNetworkInfo {
-	PLVNetworkStatus networkStatus = [PLVDeviceNetworkUtil networkTypeFromStatusBar];
 	NSString *deviceIp = [PLVDeviceNetworkUtil deviceIp];
 	NSString *gatewayIp = [PLVDeviceNetworkUtil gatewayIp];
 	NSArray *outputDNSServers = [PLVDeviceNetworkUtil outputDNSServers];
 	NSDictionary *carrierInfo = [PLVDeviceNetworkUtil carrierInfo];
 	
 	NSMutableDictionary *deviceNetworkInfo = [NSMutableDictionary dictionary];
-	deviceNetworkInfo[@"networkType"] = NSStringFromPLVNetworkStatus(networkStatus);
 	deviceNetworkInfo[@"deviceIp"] = deviceIp;
 	deviceNetworkInfo[@"gatewayIp"] = gatewayIp;
 	deviceNetworkInfo[@"outputDNSServers"] = outputDNSServers;
@@ -150,19 +148,20 @@ static id _sharedTool = nil;
 	}];
 	
 	// 当前网络状态
-	PLVNetworkStatus networkStatus = [PLVDeviceNetworkUtil networkTypeFromStatusBar];
-	if (networkStatus == PLVNetworkStatusNone) {
-		tcpChecked = YES;
-		callbackResultIfNeed();
-		return;
-	}
-	
-	// tcp
-	[self.connectionService connectWithHost:domain completion:^(PLVTcpConnectionService *tcpConnect, NSString *result, BOOL success) {
-		if (!success) return;
-		domainInfo[@"tcp"] = result;
-		tcpChecked = YES;
-		callbackResultIfNeed();
+	[PLVDeviceNetworkUtil requestNetworkTypeFromStatusBarWithCompletion:^(PLVNetworkStatus networkStatus) {
+		if (networkStatus == PLVNetworkStatusNone) {
+			tcpChecked = YES;
+			callbackResultIfNeed();
+			return;
+		}
+		
+		// tcp
+		[weakSelf.connectionService connectWithHost:domain completion:^(PLVTcpConnectionService *tcpConnect, NSString *result, BOOL success) {
+			if (!success) return;
+			domainInfo[@"tcp"] = result;
+			tcpChecked = YES;
+			callbackResultIfNeed();
+		}];
 	}];
 }
 

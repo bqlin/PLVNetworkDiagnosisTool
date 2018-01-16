@@ -127,8 +127,6 @@
 
 /// 连接回调函数
 static void TCPServerConnectCallBack(CFSocketRef socket, CFSocketCallBackType type, CFDataRef address, const void *data, void *info) {
-	NSString *add = [[NSString alloc] initWithData:(__bridge NSData *)address encoding:NSUTF8StringEncoding];
-	NSLog(@"add: %@", add);
 	if (data != NULL) {
 		printf("connect");
 		PLVTcpConnectionService *manager = (__bridge_transfer PLVTcpConnectionService *)info;
@@ -144,7 +142,7 @@ static void TCPServerConnectCallBack(CFSocketRef socket, CFSocketCallBackType ty
 		self.isExistSuccess = YES;
 		NSInteger interval = PLVTimeIntervalSinceMicroseconds(self.startTime);
 		self.sumTime += interval;
-		NSLog(@"connect success %ld", interval);
+		//NSLog(@"connect success %ld", interval);
 		NSTimeInterval msInterval = interval / 1000.0;
 		[self.result appendFormat:@"%d's time=%.3fms, ", self.connectCount + 1, msInterval];
 	} else {

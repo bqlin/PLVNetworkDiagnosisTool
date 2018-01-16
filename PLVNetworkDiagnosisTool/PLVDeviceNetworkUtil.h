@@ -58,7 +58,7 @@ NSInteger PLVTimeIntervalSinceMicroseconds(NSInteger microseconds);
 + (NSString *)ipv4Gateway;
 + (NSString *)ipv6Gateway;
 
-// 在主线程执行会有警告
+// 需在子线程执行
 + (NSArray *)DNSsWithDomain:(NSString *)domain;
 + (NSArray *)ipv4DNSsWithDomain:(NSString *)domain;
 + (NSArray *)ipv6DNSsWithDomain:(NSString *)domain;
@@ -66,6 +66,8 @@ NSInteger PLVTimeIntervalSinceMicroseconds(NSInteger microseconds);
 
 + (NSArray *)outputDNSServers;
 
-+ (PLVNetworkStatus)networkTypeFromStatusBar;
+// 需在主线程执行
++ (PLVNetworkStatus)networkStatusFromStatusBar;
++ (void)requestNetworkTypeFromStatusBarWithCompletion:(void (^)(PLVNetworkStatus networkStatus))completion;
 
 @end

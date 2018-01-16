@@ -29,9 +29,11 @@
 
 /// 获取当前时间
 NSInteger PLVCurrentMicroseconds() {
-	struct timeval time;
-	gettimeofday(&time, NULL);
-	return time.tv_usec;
+	NSInteger ms = [NSDate date].timeIntervalSince1970 * 1000 * 1000;
+	return ms;
+//	struct timeval time;
+//	gettimeofday(&time, NULL);
+//	return time.tv_usec;
 }
 
 /// 计算时间间隔
@@ -337,7 +339,7 @@ NSInteger PLVTimeIntervalSinceMicroseconds(NSInteger microseconds) {
 
 #pragma mark - 获取当前网络类型
 
-+ (PLVNetworkStatus)networkTypeFromStatusBar {
++ (PLVNetworkStatus)networkStatusFromStatusBar {
 	NSArray *subviews = [[[[UIApplication sharedApplication] valueForKey:@"statusBar"]
 						  valueForKey:@"foregroundView"] subviews];
 	NSNumber *dataNetworkItemView = nil;
@@ -351,6 +353,12 @@ NSInteger PLVTimeIntervalSinceMicroseconds(NSInteger microseconds) {
 	NSNumber *networkTypeNumber = [dataNetworkItemView valueForKey:@"dataNetworkType"];
 	networkType = networkTypeNumber.intValue;
 	return networkType;
+}
++ (void)requestNetworkTypeFromStatusBarWithCompletion:(void (^)(PLVNetworkStatus networkStatus))completion {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		PLVNetworkStatus status = [PLVDeviceNetworkUtil networkStatusFromStatusBar];
+		if (completion) completion(status);
+	});
 }
 
 #pragma mark - tool

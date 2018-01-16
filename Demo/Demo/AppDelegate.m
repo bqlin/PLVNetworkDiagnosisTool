@@ -46,7 +46,7 @@
 //	NSArray *outputDNSServers = [PLVDeviceNetworkUtil outputDNSServers];
 //	NSLog(@"outputDNSServers: %@", outputDNSServers);
 //
-//	PLVNetworkType networkType = [PLVDeviceNetworkUtil networkTypeFromStatusBar];
+//	PLVNetworkType networkType = [PLVDeviceNetworkUtil networkStatusFromStatusBar];
 //	networkType = 0;
 	
 //	__weak typeof(self) weakSelf = self;
