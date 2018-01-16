@@ -7,36 +7,24 @@
 //
 
 #import "PLVNetworkDiagnosisTool.h"
-#import <CoreTelephony/CTCarrier.h>
-#import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import <UIKit/UIKit.h>
 
+typedef void(^PLVDomainInfoBlock)(PLVNetworkDiagnosisTool *diagnosisTool, NSDictionary *domainInfo);
+
 @interface PLVNetworkDiagnosisTool ()
-{
-	NSString *_appCode;  //客户端标记
-	NSString *_appName;
-	NSString *_appVersion;
-	NSString *_UID;       //用户ID
-	NSString *_deviceID;  //客户端机器ID，如果不传入会默认取API提供的机器ID
-	NSString *_carrierName;
-	NSString *_ISOCountryCode;
-	NSString *_MobileCountryCode;
-	NSString *_MobileNetCode;
-	
-//	NETWORK_TYPE _curNetType;
-	NSString *_localIp;
-	NSString *_gatewayIp;
-	NSArray *_dnsServers;
-	NSArray *_hostAddress;
-	
-	NSMutableString *_logInfo;  //记录网络诊断log日志
-	BOOL _isRunning;
-	BOOL _connectSuccess;  //记录连接是否成功
-}
 
-@property (nonatomic, strong) PLVTcpConnectionService *connectionManager;
+/// tcp 连接测试
+@property (nonatomic, strong) PLVTcpConnectionService *connectionService;
+//@property (nonatomic, assign) BOOL tcpChecked;
 
-@property (nonatomic, assign) PLVNetworkType networkType;
+/// ping 测试
+@property (nonatomic, strong) PLVPingService *pingService;
+//@property (nonatomic, assign) BOOL pingChecked;
+
+//@property (nonatomic, assign) BOOL dnsChecked;
+
+@property (nonatomic, strong) NSDictionary *domainInfo;
+//@property (nonatomic, copy) PLVDomainInfoBlock domainInfoHandler;
 
 @end
 
@@ -44,36 +32,53 @@
 
 #pragma mark - dealloc
 
+static id _sharedTool = nil;
+
++ (instancetype)sharedTool {
+	static dispatch_once_t onceToken;
+	dispatch_once(&onceToken, ^{
+		_sharedTool = [[self alloc] init];
+	});
+	return _sharedTool;
+}
+
 - (instancetype)init {
 	if (self = [super init]) {
-		_logInfo = [NSMutableString string];
 	}
 	return self;
 }
 
 #pragma mark - property
 
-- (PLVNetworkType)networkType {
-	return [PLVDeviceNetworkUtil networkTypeFromStatusBar];
+- (PLVTcpConnectionService *)connectionService {
+	if (!_connectionService) {
+		_connectionService = [[PLVTcpConnectionService alloc] init];
+	}
+	return _connectionService;
 }
 
-- (void)requestAppInfo {
-	//输出应用版本信息和用户ID
-	NSDictionary *dicBundle = [[NSBundle mainBundle] infoDictionary];
-	
-	// 应用名称
-	NSString *appName = dicBundle[@"CFBundleDisplayName"];
-	
-	// 应用版本
-	if (!_appVersion || [_appVersion isEqualToString:@""]) {
-		_appVersion = [dicBundle objectForKey:@"CFBundleShortVersionString"];
+- (PLVPingService *)pingService {
+	if (!_pingService) {
+		_pingService = [[PLVPingService alloc] init];
 	}
+	return _pingService;
+}
+
+#pragma mark - public method
+
+/// 获取客户端信息
++ (NSDictionary *)clientInfo {
+	// 应用信息
+	NSDictionary *bundleInfo = [NSBundle mainBundle].infoDictionary;
+	NSString *appName = bundleInfo[@"CFBundleDisplayName"];
+	NSString *appVersion = bundleInfo[@"CFBundleShortVersionString"];
+	appName = [NSString stringWithFormat:@"%@ %@", appName, appVersion];
 	
-	//输出机器信息
+	// 机器信息
 	UIDevice *device = [UIDevice currentDevice];
-	// 系统版本
 	NSString *systemName = [NSString stringWithFormat:@"%@ %@", device.systemName, device.systemVersion];
-	// UUID∫
+	
+	// UUID
 	NSString *uuid = @"";
 	CFUUIDRef uuidRef = CFUUIDCreate(kCFAllocatorDefault);
 	CFStringRef uuidString = CFUUIDCreateString(kCFAllocatorDefault, uuidRef);
@@ -81,134 +86,96 @@
 	CFRelease(uuidString);
 	CFRelease(uuidRef);
 	
-	
-	//运营商信息
-	CTTelephonyNetworkInfo *netInfo = [[CTTelephonyNetworkInfo alloc] init];
-	CTCarrier *carrier = [netInfo subscriberCellularProvider];
-	// 运营商
-	NSString *carrierName = carrier.carrierName;
-	// ISO 3166-1 country code
-	NSString *isoCountryCode = carrier.isoCountryCode;
-	// mobile country code (MCC)
-	NSString *mobileCountryCode = carrier.mobileCountryCode;
-	// mobile network code (MNC)
-	NSString *mobileNetworkCode = carrier.mobileNetworkCode;
+	NSMutableDictionary *clientInfo = [NSMutableDictionary dictionary];
+	clientInfo[@"appName"] = appName;
+	clientInfo[@"systemName"] = systemName;
+	clientInfo[@"uuid"] = uuid;
+	return clientInfo;
 }
 
-- (void)requestNetworkEnvironment {
-	// 诊断域名
-	//判断是否联网以及获取网络类型
-//	NSArray *typeArr = [NSArray arrayWithObjects:@"2G", @"3G", @"4G", @"5G", @"wifi", nil];
-//	_curNetType = [LDNetGetAddress getNetworkTypeFromStatusBar];
-//	if (_curNetType == 0) {
-//		[self recordStepInfo:[NSString stringWithFormat:@"当前是否联网: 未联网"]];
-//	} else {
-//		[self recordStepInfo:[NSString stringWithFormat:@"当前是否联网: 已联网"]];
-//		if (_curNetType > 0 && _curNetType < 6) {
-//			[self
-//			 recordStepInfo:[NSString stringWithFormat:@"当前联网类型: %@",
-//							 [typeArr objectAtIndex:_curNetType - 1]]];
-//		}
-//	}
-//	
-//	//本地ip信息
-//	_localIp = [LDNetGetAddress deviceIPAdress];
-//	[self recordStepInfo:[NSString stringWithFormat:@"当前本机IP: %@", _localIp]];
-//	
-//	if (_curNetType == NETWORK_TYPE_WIFI) {
-//		_gatewayIp = [LDNetGetAddress getGatewayIPAddress];
-//		[self recordStepInfo:[NSString stringWithFormat:@"本地网关: %@", _gatewayIp]];
-//	} else {
-//		_gatewayIp = @"";
-//	}
-//	
-//	
-//	_dnsServers = [NSArray arrayWithArray:[LDNetGetAddress outPutDNSServers]];
-//	[self recordStepInfo:[NSString stringWithFormat:@"本地DNS: %@",
-//						  [_dnsServers componentsJoinedByString:@", "]]];
-//	
-//	[self recordStepInfo:[NSString stringWithFormat:@"远端域名: %@", _dormain]];
-//	
-//	// host地址IP列表
-//	long time_start = [LDNetTimer getMicroSeconds];
-//	_hostAddress = [NSArray arrayWithArray:[LDNetGetAddress getDNSsWithDormain:_dormain]];
-//	long time_duration = [LDNetTimer computeDurationSince:time_start] / 1000;
-//	if ([_hostAddress count] == 0) {
-//		[self recordStepInfo:[NSString stringWithFormat:@"DNS解析结果: 解析失败"]];
-//	} else {
-//		[self
-//		 recordStepInfo:[NSString stringWithFormat:@"DNS解析结果: %@ (%ldms)",
-//						 [_hostAddress componentsJoinedByString:@", "],
-//						 time_duration]];
-//	}
+/// 获取设备网络信息
++ (NSDictionary *)deviceNetworkInfo {
+	PLVNetworkStatus networkStatus = [PLVDeviceNetworkUtil networkTypeFromStatusBar];
+	NSString *deviceIp = [PLVDeviceNetworkUtil deviceIp];
+	NSString *gatewayIp = [PLVDeviceNetworkUtil gatewayIp];
+	NSArray *outputDNSServers = [PLVDeviceNetworkUtil outputDNSServers];
+	NSDictionary *carrierInfo = [PLVDeviceNetworkUtil carrierInfo];
+	
+	NSMutableDictionary *deviceNetworkInfo = [NSMutableDictionary dictionary];
+	deviceNetworkInfo[@"networkType"] = NSStringFromPLVNetworkStatus(networkStatus);
+	deviceNetworkInfo[@"deviceIp"] = deviceIp;
+	deviceNetworkInfo[@"gatewayIp"] = gatewayIp;
+	deviceNetworkInfo[@"outputDNSServers"] = outputDNSServers;
+	deviceNetworkInfo[@"carrierInfo"] = carrierInfo;
+	return deviceNetworkInfo;
 }
 
-- (void)startNetworkDiagnosis {
-	[self recordStepInfo:@"开始诊断..."];
+/// 请求获取域名信息
+- (void)requestDomainInfoWithCompletion:(void (^)(NSDictionary *domainInfo))completion {
+	// 维护变量
+	NSString *domain = self.domain;
+	if (!domain.length) {
+		if (completion) completion(nil);
+		return;
+	}
+	self.domainInfo = nil;
+	__block NSMutableDictionary *domainInfo = [NSMutableDictionary dictionary];
+	__block BOOL dnsChecked = NO;
+	__block BOOL pingChecked = NO;
+	__block BOOL tcpChecked = NO;
 	
-	/// 获取 app 信息[self recordCurrentAppVersion];
+	__weak typeof(self) weakSelf = self;
 	
-	/// 记录本地网络信息[self recordLocalNetEnvironment];
+	void (^callbackResultIfNeed)(void) = ^(void) {
+		if (!(dnsChecked && pingChecked && tcpChecked)) {
+			return;
+		}
+		weakSelf.domainInfo = domainInfo;
+		if (completion) completion(domainInfo);
+	};
 	
-	//未联网不进行任何检测
-//	if (_curNetType == 0) {
-//		_isRunning = NO;
-//		[self recordStepInfo:@"\n当前主机未联网，请检查网络！"];
-//		[self recordStepInfo:@"\n网络诊断结束\n"];
-//		if (self.delegate && [self.delegate respondsToSelector:@selector(netDiagnosisDidEnd:)]) {
-//			[self.delegate netDiagnosisDidEnd:_logInfo];
-//		}
-//		return;
-//	}
+	// dns
+	[PLVDeviceNetworkUtil requestDNSsWithDomain:domain completion:^(NSTimeInterval interval, NSArray *DNSs) {
+		domainInfo[@"DNSs"] = DNSs;
+		domainInfo[@"dnsInterval"] = @(interval);
+		dnsChecked = YES;
+		callbackResultIfNeed();
+	}];
 	
-//	if (_isRunning) {
-//		//        [self recordOutIPInfo];
-//	}
+	// ping
+	[self.pingService pingWithHost:domain completion:^(PLVPingService *pingService, NSString *result) {
+		domainInfo[@"ping"] = result;
+		pingChecked = YES;
+		callbackResultIfNeed();
+	}];
 	
-	// connect诊断，同步过程, 如果TCP无法连接，检查本地网络环境
-//	_connectSuccess = NO;
-//	[self recordStepInfo:@"\n开始TCP连接测试..."];
-//	if ([_hostAddress count] > 0) {
-//		self.connectionManager = [[PLVTcpConnectionService alloc] init];
-//		for (int i = 0; i < [_hostAddress count]; i++) {
-//			[_netConnect runWithHostAddress:[_hostAddress objectAtIndex:i] port:80];
-//		}
-//	} else {
-//		[self recordStepInfo:@"DNS解析失败，主机地址不可达"];
-//	}
-//	if (_isRunning) {
-//		[self pingDialogsis:!_connectSuccess];
-//	}
-//
-//
-//	if (_isRunning) {
-//		//开始诊断traceRoute
-//		[self recordStepInfo:@"\n开始traceroute..."];
-//		_traceRouter = [[LDNetTraceRoute alloc] initWithMaxTTL:TRACEROUTE_MAX_TTL
-//													   timeout:TRACEROUTE_TIMEOUT
-//												   self.maxAttempts:TRACEROUTE_ATTEMPTS
-//														  port:TRACEROUTE_PORT];
-//		_traceRouter.delegate = self;
-//		if (_traceRouter) {
-//			[NSThread detachNewThreadSelector:@selector(doTraceRoute:)
-//									 toTarget:_traceRouter
-//								   withObject:_dormain];
-//		}
-//	}
+	// 当前网络状态
+	PLVNetworkStatus networkStatus = [PLVDeviceNetworkUtil networkTypeFromStatusBar];
+	if (networkStatus == PLVNetworkStatusNone) {
+		tcpChecked = YES;
+		callbackResultIfNeed();
+		return;
+	}
+	
+	// tcp
+	[self.connectionService connectWithHost:domain completion:^(PLVTcpConnectionService *tcpConnect, NSString *result, BOOL success) {
+		if (!success) return;
+		domainInfo[@"tcp"] = result;
+		tcpChecked = YES;
+		callbackResultIfNeed();
+	}];
 }
 
-#pragma mark - common method
-/**
- * 如果调用者实现了stepInfo接口，输出信息
- */
-- (void)recordStepInfo:(NSString *)stepInfo {
-	if (stepInfo == nil) stepInfo = @"";
-	[_logInfo appendString:stepInfo];
-	[_logInfo appendString:@"\n"];
-	
-//	if (self.delegate && [self.delegate respondsToSelector:@selector(netDiagnosisStepInfo:)]) {
-//		[self.delegate netDiagnosisStepInfo:[NSString stringWithFormat:@"%@\n", stepInfo]];
-//	}
+/// 请求获取所以信息
+- (void)requestAllInfoCompletion:(void (^)(NSDictionary *info))completion {
+	__weak typeof(self) weakSelf = self;
+	[self requestDomainInfoWithCompletion:^(NSDictionary *domainInfo) {
+		NSMutableDictionary *info = [NSMutableDictionary dictionary];
+		info[@"clientInfo"] = [weakSelf.class clientInfo];
+		info[@"deviceNetworkInfo"] = [weakSelf.class deviceNetworkInfo];
+		info[@"domainInfo"] = domainInfo;
+		if (completion) completion(info);
+	}];
 }
 
 @end

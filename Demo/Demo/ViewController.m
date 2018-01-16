@@ -16,6 +16,7 @@
 @property (nonatomic, strong) PLVTcpConnectionService *connectionManager;
 @property (nonatomic, strong) PLVPingService *pingService;
 @property (nonatomic, strong) PLVTraceRouteService *traceRouteService;
+
 @property (nonatomic, copy) NSString *domain;
 
 @end
@@ -39,7 +40,19 @@
 }
 
 - (IBAction)check:(UIBarButtonItem *)sender {
-	[self checkTraceRoute];
+	[self checkAll];
+}
+
+- (void)checkAll {
+	__weak typeof(self) weakSelf = self;
+	PLVNetworkDiagnosisTool *diagnosisTool = [PLVNetworkDiagnosisTool sharedTool];
+	diagnosisTool.domain = self.domain;
+	[diagnosisTool requestAllInfoCompletion:^(NSDictionary *info) {
+		dispatch_async(dispatch_get_main_queue(), ^{
+			weakSelf.textView.text = info.description;
+			NSLog(@"info: %@", info);
+		});
+	}];
 }
 
 - (void)checkTraceRoute {
@@ -55,25 +68,22 @@
 }
 
 - (void)checkPing {
-	[self.pingService pingWithHost:self.domain];
 	__weak typeof(self) weakSelf = self;
-	self.pingService.pingCompletion = ^(PLVPingService *pingService, NSString *result) {
+	[self.pingService pingWithHost:self.domain completion:^(PLVPingService *pingService, NSString *result) {
 		dispatch_async(dispatch_get_main_queue(), ^{
 			weakSelf.textView.text = result;
 		});
-	};
+	}];
 }
 
 - (void)checkTCPConnect {
 	__weak typeof(self) weakSelf = self;
 	self.connectionManager = [PLVTcpConnectionService new];
-	self.connectionManager.connectCompletion = ^(PLVTcpConnectionService *tcpConnect, BOOL success) {
-		NSString *result = weakSelf.connectionManager.result;
+	[self.connectionManager connectWithHost:self.domain completion:^(PLVTcpConnectionService *tcpConnect, NSString *result, BOOL success) {
 		dispatch_async(dispatch_get_main_queue(), ^{
 			weakSelf.textView.text = result;
 		});
-	};
-	[self.connectionManager connectWithHost:self.domain];
+	}];
 }
 
 @end

@@ -7,7 +7,7 @@
 //
 
 #import "PLVTcpConnectionService.h"
-#import "PLVNetworkDiagnosisTool.h"
+#import "PLVDeviceNetworkUtil.h"
 #import <sys/socket.h>
 #import <netinet/in.h>
 #import <arpa/inet.h>
@@ -23,7 +23,7 @@
 
 @property (nonatomic, assign) CFSocketRef socket;
 
-@property (nonatomic, copy) NSString *result;
+@property (nonatomic, copy) NSMutableString *result;
 
 //监测是否有connect成功
 @property (nonatomic, assign) BOOL isExistSuccess;
@@ -33,23 +33,32 @@
 
 @property (nonatomic, assign) NSInteger sumTime;
 
+@property (nonatomic, copy) PLVTcpConnectResultBlock connectCompletion;
+
 @end
 
 @implementation PLVTcpConnectionService
 
+- (NSMutableString *)result {
+	if (!_result) {
+		_result = [NSMutableString string];
+	}
+	return _result;
+}
+
 - (instancetype)init {
 	if (self = [super init]) {
-		_result = @"";
 		_maxConnectCount = 3;
 	}
 	return self;
 }
 
-- (void)connectWithHost:(NSString *)host {
-	[self connectWithHost:host port:80];
+- (void)connectWithHost:(NSString *)host completion:(PLVTcpConnectResultBlock)completion {
+	[self connectWithHost:host port:80 completion:completion];
 }
-- (void)connectWithHost:(NSString *)host port:(NSInteger)port {
+- (void)connectWithHost:(NSString *)host port:(NSInteger)port completion:(PLVTcpConnectResultBlock)completion {
 	// 维护变量
+	self.connectCompletion = completion;
 	self.host = host;
 	self.port = port;
 	BOOL isIpv6 = [host rangeOfString:@":"].location != NSNotFound;
@@ -58,7 +67,7 @@
 	self.isExistSuccess = NO;
 	self.connectCount = 0;
 	self.sumTime = 0;
-	self.result = @"";
+	self.result = nil;
 	
 	// 开始连接
 	[self connect];
@@ -137,17 +146,17 @@ static void TCPServerConnectCallBack(CFSocketRef socket, CFSocketCallBackType ty
 		self.sumTime += interval;
 		NSLog(@"connect success %ld", interval);
 		NSTimeInterval msInterval = interval / 1000.0;
-		self.result = [self.result stringByAppendingString:[NSString stringWithFormat:@"%d's time=%.3fms, ", self.connectCount + 1, msInterval]];
+		[self.result appendFormat:@"%d's time=%.3fms, ", self.connectCount + 1, msInterval];
 	} else {
 		self.sumTime = 99999;
-		self.result = [self.result stringByAppendingString:[NSString stringWithFormat:@"%d's time=TimeOut, ", self.connectCount + 1]];
+		[self.result appendFormat:@"%d's time=TimeOut, ", self.connectCount + 1];
 	}
 	if (self.connectCount == self.maxConnectCount - 1) {
 		if (self.sumTime >= 99999) {
-			self.result = [self.result substringToIndex:[self.result length] - 1];
+			self.result = [self.result substringToIndex:[self.result length] - 1].mutableCopy;
 		} else {
 			NSTimeInterval averageInterval = self.sumTime / self.maxConnectCount / 1000.0;
-			self.result = [self.result stringByAppendingString:[NSString stringWithFormat:@"average=%.3fms", averageInterval]];
+			[self.result appendFormat:@"average=%.3fms", averageInterval];
 		}
 	}
 	
@@ -157,7 +166,7 @@ static void TCPServerConnectCallBack(CFSocketRef socket, CFSocketCallBackType ty
 		self.startTime = PLVCurrentMicroseconds();
 		[self connect];
 	} else {
-		if (self.connectCompletion) self.connectCompletion(self, self.isExistSuccess);
+		if (self.connectCompletion) self.connectCompletion(self, self.result, self.isExistSuccess);
 	}
 }
 

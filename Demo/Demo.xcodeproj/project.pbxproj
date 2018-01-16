@@ -64,6 +64,24 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0311B364200CA5F8002DA51E /* service */ = {
+			isa = PBXGroup;
+			children = (
+				0302E74820085E7E002CF241 /* PLVSimplePing.h */,
+				0302E74920085E7F002CF241 /* PLVSimplePing.m */,
+				0302E74B200860EC002CF241 /* PLVPingService.h */,
+				0302E74C200860EC002CF241 /* PLVPingService.m */,
+				0302E7622008BDF5002CF241 /* PLVTraceRouteService.h */,
+				0302E7632008BDF5002CF241 /* PLVTraceRouteService.m */,
+				03D397B91FF61D9200907B36 /* PLVTcpConnectionService.h */,
+				03D397BA1FF61D9200907B36 /* PLVTcpConnectionService.m */,
+				03D397B51FF5DCBB00907B36 /* PLVDeviceNetworkUtil.h */,
+				03D397B61FF5DCBB00907B36 /* PLVDeviceNetworkUtil.m */,
+				03D397B81FF5DDCE00907B36 /* Route.h */,
+			);
+			name = service;
+			sourceTree = "<group>";
+		};
 		03CB2C7B1FF4FD42003B6E48 = {
 			isa = PBXGroup;
 			children = (
@@ -110,19 +128,9 @@
 		03CB2CA61FF4FECC003B6E48 /* PLVNetworkDiagnosisTool */ = {
 			isa = PBXGroup;
 			children = (
-				0302E74820085E7E002CF241 /* PLVSimplePing.h */,
-				0302E74920085E7F002CF241 /* PLVSimplePing.m */,
-				0302E74B200860EC002CF241 /* PLVPingService.h */,
-				0302E74C200860EC002CF241 /* PLVPingService.m */,
-				0302E7622008BDF5002CF241 /* PLVTraceRouteService.h */,
-				0302E7632008BDF5002CF241 /* PLVTraceRouteService.m */,
-				03D397B91FF61D9200907B36 /* PLVTcpConnectionService.h */,
-				03D397BA1FF61D9200907B36 /* PLVTcpConnectionService.m */,
-				03D397B51FF5DCBB00907B36 /* PLVDeviceNetworkUtil.h */,
-				03D397B61FF5DCBB00907B36 /* PLVDeviceNetworkUtil.m */,
+				0311B364200CA5F8002DA51E /* service */,
 				03CB2CA81FF4FECC003B6E48 /* PLVNetworkDiagnosisTool.h */,
 				03CB2CA71FF4FECC003B6E48 /* PLVNetworkDiagnosisTool.m */,
-				03D397B81FF5DDCE00907B36 /* Route.h */,
 			);
 			name = PLVNetworkDiagnosisTool;
 			path = ../PLVNetworkDiagnosisTool;

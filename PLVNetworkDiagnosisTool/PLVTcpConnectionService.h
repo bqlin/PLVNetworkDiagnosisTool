@@ -10,13 +10,11 @@
 
 @interface PLVTcpConnectionService : NSObject
 
+typedef void(^PLVTcpConnectResultBlock)(PLVTcpConnectionService *tcpConnect, NSString *result, BOOL success);
+
 @property (nonatomic, assign) int maxConnectCount;
 
-@property (nonatomic, copy, readonly) NSString *result;
-
-@property (nonatomic, copy) void (^connectCompletion)(PLVTcpConnectionService *tcpConnect, BOOL success);
-
-- (void)connectWithHost:(NSString *)host;
-- (void)connectWithHost:(NSString *)host port:(NSInteger)port;
+- (void)connectWithHost:(NSString *)host completion:(PLVTcpConnectResultBlock)completion;
+- (void)connectWithHost:(NSString *)host port:(NSInteger)port completion:(PLVTcpConnectResultBlock)completion;
 
 @end

@@ -7,7 +7,7 @@
 //
 
 #import "PLVPingService.h"
-#import "PLVNetworkDiagnosisTool.h"
+#import "PLVDeviceNetworkUtil.h"
 #import "PLVSimplePing.h"
 #import <sys/socket.h>
 #import <netdb.h>
@@ -27,6 +27,8 @@
 
 @property (nonatomic, strong) NSMutableArray<NSNumber *> *intervals;
 @property (nonatomic, assign) NSTimeInterval averageInterval;
+
+@property (nonatomic, copy) PLVPingResultBlock pingCompletion;
 
 @end
 
@@ -61,7 +63,8 @@
 	_maxPingCount = 4;
 }
 
-- (void)pingWithHost:(NSString *)host {
+- (void)pingWithHost:(NSString *)host completion:(PLVPingResultBlock)completion {
+	self.pingCompletion = completion;
 	self.pingCount = 0;
 	self.hostName = host;
 	BOOL forceIPv4 = YES;

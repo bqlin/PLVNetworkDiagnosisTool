@@ -8,6 +8,8 @@
 
 #import "PLVDeviceNetworkUtil.h"
 #import <UIKit/UIKit.h>
+#import <CoreTelephony/CTCarrier.h>
+#import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import <ifaddrs.h>
 #import <arpa/inet.h>
 #import <netdb.h>
@@ -40,6 +42,29 @@ NSInteger PLVTimeIntervalSinceMicroseconds(NSInteger microseconds) {
 
 @implementation PLVDeviceNetworkUtil
 
+/// 运营商信息
++ (NSDictionary *)carrierInfo {
+	//运营商信息
+	CTTelephonyNetworkInfo *netInfo = [[CTTelephonyNetworkInfo alloc] init];
+	CTCarrier *carrier = [netInfo subscriberCellularProvider];
+	// 运营商
+	NSString *carrierName = carrier.carrierName;
+	// ISO 3166-1 country code
+	NSString *isoCountryCode = carrier.isoCountryCode;
+	// mobile country code (MCC)
+	NSString *mobileCountryCode = carrier.mobileCountryCode;
+	// mobile network code (MNC)
+	NSString *mobileNetworkCode = carrier.mobileNetworkCode;
+	
+	NSMutableDictionary *carrierInfo = [NSMutableDictionary dictionary];
+	carrierInfo[@"carrierName"] = carrierName;
+	carrierInfo[@"isoCountryCode"] = isoCountryCode;
+	carrierInfo[@"mobileCountryCode"] = mobileCountryCode;
+	carrierInfo[@"mobileNetworkCode"] = mobileNetworkCode;
+	return carrierInfo;
+}
+
+/// 设备 IP
 + (NSString *)deviceIp {
 	NSString *deviceIp = @"";
 	struct ifaddrs *interfaces = NULL;
@@ -70,7 +95,6 @@ NSInteger PLVTimeIntervalSinceMicroseconds(NSInteger microseconds) {
 		}
 	}
 	
-	
 	freeifaddrs(interfaces);
 	
 	//以FE80开始的地址是单播地址
@@ -81,6 +105,7 @@ NSInteger PLVTimeIntervalSinceMicroseconds(NSInteger microseconds) {
 	}
 }
 
+/// 网关 IP
 + (NSString *)gatewayIp {
 	NSString *gatewayIp = nil;
 	NSString *ipv4Gateway = [self ipv4Gateway];
@@ -202,6 +227,15 @@ NSInteger PLVTimeIntervalSinceMicroseconds(NSInteger microseconds) {
 
 #pragma mark - DNS
 
++ (void)requestDNSsWithDomain:(NSString *)domain completion:(void (^)(NSTimeInterval interval, NSArray *DNSs))completion {
+	NSInteger startTime = PLVCurrentMicroseconds();
+	[[[NSOperationQueue alloc] init] addOperationWithBlock:^{
+		NSArray *DNSs = [PLVDeviceNetworkUtil DNSsWithDomain:domain];
+		NSTimeInterval interval = PLVTimeIntervalSinceMicroseconds(startTime) / 1000.0;
+		if (completion) completion(interval, DNSs);
+	}];
+}
+
 + (NSArray *)DNSsWithDomain:(NSString *)domain {
 	NSArray *result = nil;
 	NSArray *ipv4DNSs = [self ipv4DNSsWithDomain:domain];
@@ -303,7 +337,7 @@ NSInteger PLVTimeIntervalSinceMicroseconds(NSInteger microseconds) {
 
 #pragma mark - 获取当前网络类型
 
-+ (PLVNetworkType)networkTypeFromStatusBar {
++ (PLVNetworkStatus)networkTypeFromStatusBar {
 	NSArray *subviews = [[[[UIApplication sharedApplication] valueForKey:@"statusBar"]
 						  valueForKey:@"foregroundView"] subviews];
 	NSNumber *dataNetworkItemView = nil;
@@ -313,7 +347,7 @@ NSInteger PLVTimeIntervalSinceMicroseconds(NSInteger microseconds) {
 			break;
 		}
 	}
-	PLVNetworkType networkType = PLVNetworkTypeNone;
+	PLVNetworkStatus networkType = PLVNetworkStatusNone;
 	NSNumber *networkTypeNumber = [dataNetworkItemView valueForKey:@"dataNetworkType"];
 	networkType = networkTypeNumber.intValue;
 	return networkType;

@@ -10,6 +10,8 @@
 
 @interface PLVPingService : NSObject
 
+typedef void(^PLVPingResultBlock)(PLVPingService *pingService, NSString *result);
+
 /// 域名
 @property (nonatomic, copy, readonly) NSString *hostName;
 
@@ -19,8 +21,6 @@
 /// ping 次数
 @property (nonatomic, assign) NSInteger maxPingCount;
 
-@property (nonatomic, copy) void (^pingCompletion)(PLVPingService *pingService, NSString *result);
-
-- (void)pingWithHost:(NSString *)host;
+- (void)pingWithHost:(NSString *)host completion:(PLVPingResultBlock)completion;
 
 @end

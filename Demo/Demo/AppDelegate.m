@@ -50,12 +50,12 @@
 //	networkType = 0;
 	
 //	__weak typeof(self) weakSelf = self;
-//	self.connectionManager = [PLVTcpConnectionService new];
-//	self.connectionManager.connectCompletion = ^(BOOL success) {
-//		NSString *result = weakSelf.connectionManager.result;
+//	self.connectionService = [PLVTcpConnectionService new];
+//	self.connectionService.connectCompletion = ^(BOOL success) {
+//		NSString *result = weakSelf.connectionService.result;
 //		NSLog(@"result: %@", result);
 //	};
-//	[self.connectionManager connectWithHost:domain];
+//	[self.connectionService connectWithHost:domain];
 	
 	
 	
