@@ -15,5 +15,7 @@ Pod::Spec.new do |s|
   s.source_files  = "PLVNetworkDiagnosisTool/*.{h,m}"
   s.requires_arc = true
   s.platform     = :ios, "8.0"
+  s.libraries = "resolv"
+  s.frameworks = "CoreTelephony"
 
 end
